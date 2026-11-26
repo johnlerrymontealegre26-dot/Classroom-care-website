@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classroom Care - Maintenance System</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#26313f}
+header{background:#374151;color:white;padding:22px;text-align:center}
+header h1{margin:0;font-size:28px}
+header p{margin:6px 0 0;color:#d1d5db}
+nav{display:flex;justify-content:center;gap:10px;padding:13px;background:white;flex-wrap:wrap}
+button{border:0;border-radius:8px;padding:11px 15px;font-weight:bold;cursor:pointer}
+nav button{background:#e5e7eb;color:#374151}
+nav button.active,.primary{background:#374151;color:white}
+main{max-width:1050px;margin:25px auto;padding:0 14px}
+.card{background:white;border:1px solid #e5e7eb;border-radius:13px;padding:20px;margin-bottom:18px}
+h2{margin-top:0}
+label{display:block;font-size:14px;font-weight:bold;margin:13px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.hidden{display:none!important}
+.note{background:#fef3c7;color:#92400e;padding:12px;border-radius:8px;font-size:13px;margin:12px 0}
+.message{padding:12px;border-radius:8px;margin-top:12px;display:none}
+.good{display:block;background:#dcfce7;color:#166534}
+.bad{display:block;background:#fee2e2;color:#991b1b}
+.report{border:1px solid #e5e7eb;padding:15px;border-radius:10px;margin:12px 0;background:white}
+.report h3{margin:0 0 7px}
+.meta{font-size:12px;color:#6b7280;margin:6px 0}
+.description{white-space:pre-wrap;margin:12px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row select{width:auto;min-width:145px}
+.danger{background:#fee2e2;color:#991b1b}
+.secondary{background:#e5e7eb;color:#374151}
+.badge{display:inline-block;border-radius:20px;padding:5px 10px;font-size:12px;font-weight:bold}
+.Pending{background:#fef3c7;color:#92400e}
+.In-Progress{background:#dbeafe;color:#1d4ed8}
+.Completed{background:#dcfce7;color:#166534}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}
+.stat{background:#f9fafb;border:1px solid #e5e7eb;padding:13px;border-radius:9px;text-align:center}
+.stat strong{display:block;font-size:23px}
+.empty{text-align:center;color:#6b7280;padding:25px}
+footer{text-align:center;color:#6b7280;font-size:13px;padding:25px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.stats{grid-template-columns:1fr 1fr}.card{padding:15px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Classroom Care</h1>
+<p>Classroom Maintenance Reporting System</p>
+</header>
+
+<nav>
+<button id="reportNav" class="active" onclick="showPage('report')">Submit a Report</button>
+<button id="adminNav" onclick="showPage('admin')">Admin Panel</button>
+</nav>
+
+<main>
+<section id="reportPage">
+<div class="card">
+<h2>Report a Classroom Problem</h2>
+<p>Submit a maintenance concern to the school maintenance team.</p>
+<div class="note">You may leave your name blank to submit anonymously.</div>
+
+<form id="reportForm">
+<div class="grid">
+<div>
+<label>Your Name (Optional)</label>
+<input id="reporter" placeholder="Leave blank for anonymous">
+</div>
+<div>
+<label>Grade and Section</label>
+<input id="section" placeholder="e.g. Grade 10 - Rizal">
+</div>
+<div>
+<label>Classroom / Location *</label>
+<input id="room" required placeholder="e.g. Room 5">
+</div>
+<div>
+<label>Problem Category *</label>
+<select id="category" required>
+<option value="">Choose category</option>
+<option>Broken Chair</option>
+<option>Damaged Table</option>
+<option>Defective Light</option>
+<option>Malfunctioning Electric Fan</option>
+<option>Damaged Electrical Outlet</option>
+<option>Door or Window</option>
+<option>Floor, Wall or Ceiling</option>
+<option>Water or Plumbing</option>
+<option>Other</option>
+</select>
+</div>
+<div>
+<label>Urgency *</label>
+<select id="urgency" required>
+<option value="">Choose urgency</option>
+<option>Low</option>
+<option>Normal</option>
+<option>High</option>
+</select>
+</div>
+<div class="full">
+<label>Description of the Problem *</label>
+<textarea id="description" required placeholder="Describe the problem and where it can be found..."></textarea>
+</div>
+</div>
+<button class="primary" type="submit">Submit Maintenance Report</button>
+<div id="formMessage" class="message"></div>
+</form>
+</div>
+</section>
+
+<section id="adminPage" class="hidden">
+<div class="card" id="loginCard">
+<h2>Administrator Login</h2>
+<p>Enter the administrator password to access maintenance reports.</p>
+<label>Admin Password</label>
+<input type="password" id="password" placeholder="Enter password">
+<br><br>
+<button class="primary" onclick="login()">Unlock Admin Dashboard</button>
+<div id="loginMessage" class="message"></div>
+<div class="note">For demonstration purposes only. Do not use this version to store confidential reports.</div>
+</div>
+
+<div id="dashboard" class="hidden">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<h2>Admin Dashboard</h2>
+<button class="secondary" onclick="logout()">Lock Admin</button>
+</div>
+
+<div class="stats">
+<div class="stat"><strong id="total">0</strong>Total</div>
+<div class="stat"><strong id="pending">0</strong>Pending</div>
+<div class="stat"><strong id="progress">0</strong>In Progress</div>
+<div class="stat"><strong id="completed">0</strong>Completed</div>
+</div>
+
+<div class="row">
+<button class="secondary" onclick="exportBackup()">Export Backup</button>
+<button class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
+<button class="secondary" onclick="exportHTML()">Export HTML Copy</button>
+<button class="danger" onclick="clearReports()">Delete All</button>
+<input type="file" id="importFile" accept=".json" class="hidden">
+</div>
+<p class="meta">Reports are stored in this browser on this device. They do not automatically sync between devices.</p>
+</div>
+
+<div class="card">
+<h2>Maintenance Reports</h2>
+<div class="grid">
+<div>
+<label>Search reports</label>
+<input id="search" placeholder="Search room, category or report..." oninput="renderReports()">
+</div>
+<div>
+<label>Filter by status</label>
+<select id="filter" onchange="renderReports()">
+<option>All</option>
+<option>Pending</option>
+<option>In Progress</option>
+<option>Completed</option>
+</select>
+</div>
+</div>
+<div id="reportList"></div>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<b>Maintenance Report Group</b><br>
+JOHN LERRY MONTEALEGRE<br>
+NEPTHALY GIVERA<br>
+MARY MANDY MELO<br>
+CARL LESTER STAMARIA
+</footer>
+
+<script>
+const ADMIN_PASSWORD="admin123";
+const STORAGE_KEY="classroomCareNewReports";
+let reports=[];
+let unlocked=false;
+
+function loadReports(){
+try{
+let saved=localStorage.getItem(STORAGE_KEY);
+return saved?JSON.parse(saved):[];
+}catch(e){return []}
+}
+function saveReports(){
+try{
+localStorage.setItem(STORAGE_KEY,JSON.stringify(reports));
+return true;
+}catch(e){
+alert("Could not save data. Export a backup and free some browser storage.");
+return false;
+}
+}
+function showMessage(id,text,type){
+let el=document.getElementById(id);
+el.textContent=text;
+el.className="message "+(type==="good"?"good":"bad");
+}
+function showPage(page){
+let isAdmin=page==="admin";
+document.getElementById("reportPage").classList.toggle("hidden",isAdmin);
+document.getElementById("adminPage").classList.toggle("hidden",!isAdmin);
+document.getElementById("reportNav").classList.toggle("active",!isAdmin);
+document.getElementById("adminNav").classList.toggle("active",isAdmin);
+if(isAdmin){
+if(unlocked){
+document.getElementById("loginCard").classList.add("hidden");
+document.getElementById("dashboard").classList.remove("hidden");
+renderReports();
+}else{
+document.getElementById("loginCard").classList.remove("hidden");
+document.getElementById("dashboard").classList.add("hidden");
+}
+}
+}
+document.getElementById("reportForm").addEventListener("submit",function(e){
+e.preventDefault();
+let report={
+id:"CC-"+Date.now(),
+reporter:document.getElementById("reporter").value.trim()||"Anonymous",
+section:document.getElementById("section").value.trim(),
+room:document.getElementById("room").value.trim(),
+category:document.getElementById("category").value,
+urgency:document.getElementById("urgency").value,
+description:document.getElementById("description").value.trim(),
+status:"Pending",
+createdAt:new Date().toISOString()
+};
+reports.unshift(report);
+if(!saveReports()){
+reports.shift();
+return;
+}
+this.reset();
+showMessage("formMessage","Report submitted successfully! Reference: "+report.id,"good");
+});
+function login(){
+if(document.getElementById("password").value===ADMIN_PASSWORD){
+unlocked=true;
+showPage("admin");
+}else{
+showMessage("loginMessage","Incorrect password.","bad");
+}
+}
+function logout(){
+unlocked=false;
+document.getElementById("password").value="";
+showPage("report");
+}
+function escapeHTML(value){
+return String(value??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+}
+function renderReports(){
+if(!unlocked)return;
+let pending=reports.filter(r=>r.status==="Pending").length;
+let progress=reports.filter(r=>r.status==="In Progress").length;
+let completed=reports.filter(r=>r.status==="Completed").length;
+document.getElementById("total").textContent=reports.length;
+document.getElementById("pending").textContent=pending;
+document.getElementById("progress").textContent=progress;
+document.getElementById("completed").textContent=completed;
+
+let filter=document.getElementById("filter").value;
+let search=document.getElementById("search").value.toLowerCase();
+let filtered=reports.filter(r=>
+(filter==="All"||r.status===filter)&&
+JSON.stringify(r).toLowerCase().includes(search)
+);
+let box=document.getElementById("reportList");
+if(!filtered.length){
+box.innerHTML='<div class="empty">No maintenance reports found.</div>';
+return;
+}
+box.innerHTML=filtered.map(r=>`
+<article class="report">
+<div class="row" style="justify-content:space-between">
+<h3>${escapeHTML(r.category)} — ${escapeHTML(r.room)}</h3>
+<span class="badge ${escapeHTML((r.status||"Pending").replace(" ","-"))}">${escapeHTML(r.status)}</span>
+</div>
+<div class="meta">Reference: ${escapeHTML(r.id)} · ${escapeHTML(new Date(r.createdAt).toLocaleString())}</div>
+<div class="meta">Reporter: ${escapeHTML(r.reporter)} · Section: ${escapeHTML(r.section||"Not provided")}</div>
+<div class="meta">Urgency: <b>${escapeHTML(r.urgency)}</b></div>
+<div class="description">${escapeHTML(r.description)}</div>
+<div class="row">
+<select onchange="changeStatus('${escapeHTML(r.id)}',this.value)">
+<option ${r.status==="Pending"?"selected":""}>Pending</option>
+<option ${r.status==="In Progress"?"selected":""}>In Progress</option>
+<option ${r.status==="Completed"?"selected":""}>Completed</option>
+</select>
+<button class="danger" onclick="deleteReport('${escapeHTML(r.id)}')">Delete Report</button>
+</div>
+</article>`).join("");
+}
+function changeStatus(id,status){
+let report=reports.find(r=>r.id===id);
+if(report){report.status=status;saveReports();renderReports();}
+}
+function deleteReport(id){
+if(!confirm("Delete this report?"))return;
+reports=reports.filter(r=>r.id!==id);
+saveReports();renderReports();
+}
+function clearReports(){
+if(!confirm("Delete ALL reports saved in this browser?"))return;
+reports=[];saveReports();renderReports();
+}
+function downloadFile(name,content,type){
+let blob=new Blob([content],{type});
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a");
+a.href=url;a.download=name;a.click();
+setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportBackup(){
+downloadFile("classroom-care-backup.json",JSON.stringify(reports,null,2),"application/json");
+}
+document.getElementById("importFile").addEventListener("change",function(){
+let file=this.files[0];if(!file)return;
+let reader=new FileReader();
+reader.onload=()=>{
+try{
+let data=JSON.parse(reader.result);
+if(!Array.isArray(data))throw new Error();
+let ids=new Set(reports.map(r=>r.id));
+data.forEach(r=>{if(r&&r.id&&!ids.has(r.id)){reports.push(r);ids.add(r.id);}});
+saveReports();renderReports();alert("Backup imported.");
+}catch(e){alert("Invalid backup file.");}
+};
+reader.readAsText(file);this.value="";
+});
+function exportHTML(){
+let copy=document.documentElement.cloneNode(true);
+let script=copy.querySelector("script");
+let embedded=JSON.stringify(reports).replace(/</g,"\\u003c");
+script.textContent=script.textContent.replace(
+'let reports=[];',
+'let reports=[];'
+).replace(
+'let unlocked=false;',
+'let unlocked=false;'
+).replace(
+'function loadReports(){',
+'function loadReports(){'
+);
+let source=script.textContent;
+source=source.replace(
+'let reports=[];',
+'let reports=[];'
+);
+source=source.replace(
+'function loadReports(){',
+'function loadReports(){'
+);
+source=source.replace(
+'const STORAGE_KEY="classroomCareNewReports";',
+'const STORAGE_KEY="classroomCareNewReports";'
+);
+source=source.replace(
+'let reports=[];',
+'let reports='+embedded+';'
+);
+script.textContent=source;
+downloadFile("classroom-care-with-reports.html","<!DOCTYPE html>\n"+copy.outerHTML,"text/html");
+}
+reports=loadReports();
+</script>
+</body>
+</html>
+
+HTML
